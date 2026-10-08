@@ -1,10 +1,19 @@
+
+
 // server ko create karna
 
 const express = require('express');
 const noteModel = require("./models/note.model")
 
 const app = express();
+const cors = require("cors")
+const path = require("path")
+
+
+
 app.use(express.json());
+app.use(cors())
+app.use(express.static("./public"))
 
 //POST : /api/notes
 // create new note and save data in mongodb
@@ -64,13 +73,22 @@ app.delete("/api/notes/:id", async (req,res)=>{
 app.patch('/api/notes/:id',async(req,res)=>{
     const id = req.params.id
     const {description} = req.body
-
-    await noteModel.findByIdAndUpdate(id,{description})
+    
+    const updatedNote = await noteModel.findByIdAndUpdate(
+        id,
+        { description },
+        { new: true }
+    )
 
     res.status(200).json({
-        message:"Note updated successfully!"
+        message:"Note updated successfully!",
+        note: updatedNote
     })
 })
 
-module.exports = app;
 
+app.use('*name',(req,res)=>{
+    res.sendFile(path.join(__dirname,"..","/public/index.html"))
+})
+
+module.exports = app;
